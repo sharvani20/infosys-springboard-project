@@ -21,6 +21,22 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 const SHOW_INGEST =
   import.meta.env.DEV || import.meta.env.VITE_ENABLE_INGEST === 'true'
 
+// LLM judges sometimes return list items as objects such as
+// { claim, evidence } instead of plain strings. React cannot render objects,
+// so convert any list item to readable text before showing it.
+function asText(item) {
+  if (item === null || item === undefined) return ''
+  if (typeof item !== 'object') return String(item)
+
+  const main = item.claim || item.text || item.description || item.issue
+  const extra = item.evidence || item.reason || item.explanation
+
+  if (main && extra) return `${main} (Evidence: ${extra})`
+  if (main) return String(main)
+
+  return JSON.stringify(item)
+}
+
 
 const navigation = [
   { label: 'Dashboard', icon: LayoutDashboard },
@@ -755,7 +771,7 @@ function EvaluationResults({ result }) {
                   <strong>Supported claims</strong>
                   <ul>
                     {data.supported_claims.map((claim, i) => (
-                      <li key={i}>{claim}</li>
+                      <li key={i}>{asText(claim)}</li>
                     ))}
                   </ul>
                 </>
@@ -766,7 +782,7 @@ function EvaluationResults({ result }) {
                   <strong>Hallucinated claims</strong>
                   <ul>
                     {data.hallucinated_claims.map((claim, i) => (
-                      <li key={i}>{claim}</li>
+                      <li key={i}>{asText(claim)}</li>
                     ))}
                   </ul>
                 </>
@@ -777,7 +793,7 @@ function EvaluationResults({ result }) {
                   <strong>Missing information</strong>
                   <ul>
                     {data.missing_information.map((item, i) => (
-                      <li key={i}>{item}</li>
+                      <li key={i}>{asText(item)}</li>
                     ))}
                   </ul>
                 </>
@@ -798,7 +814,7 @@ function EvaluationResults({ result }) {
 
             <ul>
               {verdict[key].map((item, i) => (
-                <li key={i}>{item}</li>
+                <li key={i}>{asText(item)}</li>
               ))}
             </ul>
           </div>
