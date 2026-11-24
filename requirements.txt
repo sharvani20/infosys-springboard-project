@@ -1,0 +1,15 @@
+# Web framework
+fastapi==0.162.0
+uvicorn==0.54.0
+
+# LLM judge agents (hosted on Groq - no local model memory)
+groq==1.7.0
+python-dotenv==1.2.4
+
+# PDF text extraction
+pymupdf==2.1
+
+# Lightweight retrieval (replaces chromadb + sentence-transformers/PyTorch,
+# which do not fit in Render's 512 MB free tier)
+numpy
+fastembed

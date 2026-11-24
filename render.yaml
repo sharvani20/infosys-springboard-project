@@ -1,0 +1,36 @@
+# Render Blueprint: backend (FastAPI) + frontend (static site), both free.
+# Optional - you can also create the two services by hand (see DEPLOY.md).
+services:
+  - type: web
+    name: ai-validator-api
+    runtime: python
+    plan: free
+    buildCommand: bash build.sh
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false            # paste in the Render dashboard
+      - key: GROQ_MODEL
+        sync: false            # paste in the Render dashboard
+      - key: FRONTEND_URL
+        sync: false            # your static site URL, e.g. https://xxx.onrender.com
+      - key: ADMIN_TOKEN
+        generateValue: true    # protects /api/ingest
+      - key: RETRIEVAL_MODE
+        value: hybrid          # set to "keyword" if memory is ever tight
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "5"
+      - key: DAILY_EVAL_CAP
+        value: "300"
+
+  - type: web
+    name: ai-validator-frontend
+    runtime: static
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false            # your API URL, e.g. https://ai-validator-api.onrender.com
+      - key: NODE_VERSION
+        value: "22"
